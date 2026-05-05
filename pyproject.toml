@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vectorpin"
+version = "0.1.0"
+description = "Verifiable integrity for AI embedding stores."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [
+    { name = "Jascha Wanger", email = "jascha@thirdkey.ai" },
+]
+keywords = ["security", "vector-database", "embeddings", "rag", "integrity", "provenance"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "cryptography>=42.0",
+    "numpy>=1.26",
+]
+
+[project.optional-dependencies]
+qdrant = ["qdrant-client>=1.7"]
+faiss = ["faiss-cpu>=1.8"]
+detectors = ["scikit-learn>=1.3"]
+all = [
+    "qdrant-client>=1.7",
+    "faiss-cpu>=1.8",
+    "scikit-learn>=1.3",
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.0",
+    "ruff>=0.15",
+    "mypy>=1.5",
+]
+
+[project.urls]
+Homepage = "https://vectorpin.org"
+Repository = "https://github.com/thirdkey/vectorpin"
+Issues = "https://github.com/thirdkey/vectorpin/issues"
+Documentation = "https://vectorpin.org/docs"
+
+[project.scripts]
+vectorpin = "vectorpin.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["vectorpin*"]
+
+[tool.setuptools.package-data]
+vectorpin = ["py.typed"]
+
+# ---- Tooling ----
+[tool.ruff]
+line-length = 100
+required-version = ">=0.15.0"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "RUF"]
+ignore = ["E402", "A003"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["vectorpin"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: tests that require an external service",
+    "slow: long-running tests",
+]
+
+[tool.coverage.run]
+source = ["src/vectorpin"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unreachable = true
+ignore_missing_imports = true
