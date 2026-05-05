@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[detectors,dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest -v
+
+  rust:
+    name: Rust stable
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+      - name: clippy
+        run: cargo clippy -j2 --all-targets -- -D warnings
+      - name: test
+        run: cargo test -j2 --all-targets
+      - name: doctest
+        run: cargo test -j2 --doc
+
+  cross-language-fixtures-up-to-date:
+    name: testvectors/ matches Python output
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Regenerate fixtures
+        run: python scripts/generate_test_vectors.py
+      - name: Verify no drift
+        run: |
+          if ! git diff --quiet testvectors/; then
+            echo "::error::testvectors/ is stale. Run scripts/generate_test_vectors.py and commit."
+            git diff testvectors/
+            exit 1
+          fi

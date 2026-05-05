@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "comment": "Cross-language test vectors for VectorPin protocol v1. The signing key seed is intentionally public \u2014 it exists only to make these fixtures reproducible. Do not use in production.",
+  "key_id": "test-vectors-2026-05",
+  "public_key_b64": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg",
+  "private_seed_b64": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "fixtures": [
+    {
+      "name": "vector_0",
+      "input": {
+        "source": "hello world",
+        "model": "test-model-v1",
+        "vector_b64": "bL8APn9GB7698iM_39XWPaEhCb_9Irk-eemmP-Zzcj_-JzS_Vfmhv-qOH79uRSk9Ts0UwOwKYL4Dep-_4HU7vw",
+        "vec_dtype": "f32",
+        "vec_dim": 16,
+        "timestamp": "2026-05-05T12:00:00Z"
+      },
+      "expected": {
+        "pin_json": "{\"kid\":\"test-vectors-2026-05\",\"model\":\"test-model-v1\",\"sig\":\"x1Lc0M9W4lHlhHYNPscC4CxHKtiOW6JeE7f_OEONB6aHT1x9He0Jc4vqI-7c5mPpmW29_8Cu7snr1MDF14PIDQ\",\"source_hash\":\"sha256:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9\",\"ts\":\"2026-05-05T12:00:00Z\",\"v\":1,\"vec_dim\":16,\"vec_dtype\":\"f32\",\"vec_hash\":\"sha256:5f74ef6ec2c639ff447cb52256353b79599321a956d6cf9921aa9599585cb836\"}",
+        "canonical_header_b64": "eyJtb2RlbCI6InRlc3QtbW9kZWwtdjEiLCJzb3VyY2VfaGFzaCI6InNoYTI1NjpiOTRkMjdiOTkzNGQzZTA4YTUyZTUyZDdkYTdkYWJmYWM0ODRlZmUzN2E1MzgwZWU5MDg4ZjdhY2UyZWZjZGU5IiwidHMiOiIyMDI2LTA1LTA1VDEyOjAwOjAwWiIsInYiOjEsInZlY19kaW0iOjE2LCJ2ZWNfZHR5cGUiOiJmMzIiLCJ2ZWNfaGFzaCI6InNoYTI1Njo1Zjc0ZWY2ZWMyYzYzOWZmNDQ3Y2I1MjI1NjM1M2I3OTU5OTMyMWE5NTZkNmNmOTkyMWFhOTU5OTU4NWNiODM2In0",
+        "vec_hash": "sha256:5f74ef6ec2c639ff447cb52256353b79599321a956d6cf9921aa9599585cb836",
+        "source_hash": "sha256:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+      }
+    },
+    {
+      "name": "vector_1",
+      "input": {
+        "source": "The quick brown fox jumps over the lazy dog.",
+        "model": "text-embedding-3-large",
+        "vector_b64": "afCwPpFVUj8ML6k-282mv2fFZz81i-Q-xHUJvyjEFD88qbo-iZiWPsPV6Dxi9Qs_QYg8v97RJr5Y2Pa-_E0ZP6azIj3kvJW-JytIv7Sug77IZgU80xuNvuKjpT9Y3IA_sIMtwDDL8b919zK-VynYvjvFWj6kiV4-rIoHQLJWjr8",
+        "vec_dtype": "f32",
+        "vec_dim": 32,
+        "timestamp": "2026-05-05T12:00:00Z"
+      },
+      "expected": {
+        "pin_json": "{\"kid\":\"test-vectors-2026-05\",\"model\":\"text-embedding-3-large\",\"sig\":\"CHzDL2ti3xlxS6By23xTnKWb1Y8nen6KLGo6PEwpoxThXM2ontJg9QWpmpw9BW8QU62K2MihwwY9RrISIRUdDw\",\"source_hash\":\"sha256:ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\",\"ts\":\"2026-05-05T12:00:00Z\",\"v\":1,\"vec_dim\":32,\"vec_dtype\":\"f32\",\"vec_hash\":\"sha256:580e13164bad578cdcf8652bea7ee4f649bb24db94d0d967d13b3503ec360bec\"}",
+        "canonical_header_b64": "eyJtb2RlbCI6InRleHQtZW1iZWRkaW5nLTMtbGFyZ2UiLCJzb3VyY2VfaGFzaCI6InNoYTI1NjplZjUzN2YyNWM4OTViZmE3ODI1MjY1MjlhOWI2M2Q5N2FhNjMxNTY0ZDVkNzg5YzJiNzY1NDQ4Yzg2MzVmYjZjIiwidHMiOiIyMDI2LTA1LTA1VDEyOjAwOjAwWiIsInYiOjEsInZlY19kaW0iOjMyLCJ2ZWNfZHR5cGUiOiJmMzIiLCJ2ZWNfaGFzaCI6InNoYTI1Njo1ODBlMTMxNjRiYWQ1NzhjZGNmODY1MmJlYTdlZTRmNjQ5YmIyNGRiOTRkMGQ5NjdkMTNiMzUwM2VjMzYwYmVjIn0",
+        "vec_hash": "sha256:580e13164bad578cdcf8652bea7ee4f649bb24db94d0d967d13b3503ec360bec",
+        "source_hash": "sha256:ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c"
+      }
+    },
+    {
+      "name": "vector_2",
+      "input": {
+        "source": "caf\u00e9",
+        "model": "unicode-test-v1",
+        "vector_b64": "NpdBPtjSBb8RfdO-AEEcwNBc5j8HdJI_0p2mvjAYRj8",
+        "vec_dtype": "f32",
+        "vec_dim": 8,
+        "timestamp": "2026-05-05T12:00:00Z"
+      },
+      "expected": {
+        "pin_json": "{\"kid\":\"test-vectors-2026-05\",\"model\":\"unicode-test-v1\",\"sig\":\"-eqVRW1YSC3bBz1JCc16OFzXXLWmoYhD5U710VIgaOazsReDVt1TmXYVi1ieX3b8NnpKwLZLUSX4qqhKKatmDA\",\"source_hash\":\"sha256:850f7dc43910ff890f8879c0ed26fe697c93a067ad93a7d50f466a7028a9bf4e\",\"ts\":\"2026-05-05T12:00:00Z\",\"v\":1,\"vec_dim\":8,\"vec_dtype\":\"f32\",\"vec_hash\":\"sha256:6a1c0202082fd812a1429f4de03113eb9fdd30e48081a560d1f72d7aab0b8074\"}",
+        "canonical_header_b64": "eyJtb2RlbCI6InVuaWNvZGUtdGVzdC12MSIsInNvdXJjZV9oYXNoIjoic2hhMjU2Ojg1MGY3ZGM0MzkxMGZmODkwZjg4NzljMGVkMjZmZTY5N2M5M2EwNjdhZDkzYTdkNTBmNDY2YTcwMjhhOWJmNGUiLCJ0cyI6IjIwMjYtMDUtMDVUMTI6MDA6MDBaIiwidiI6MSwidmVjX2RpbSI6OCwidmVjX2R0eXBlIjoiZjMyIiwidmVjX2hhc2giOiJzaGEyNTY6NmExYzAyMDIwODJmZDgxMmExNDI5ZjRkZTAzMTEzZWI5ZmRkMzBlNDgwODFhNTYwZDFmNzJkN2FhYjBiODA3NCJ9",
+        "vec_hash": "sha256:6a1c0202082fd812a1429f4de03113eb9fdd30e48081a560d1f72d7aab0b8074",
+        "source_hash": "sha256:850f7dc43910ff890f8879c0ed26fe697c93a067ad93a7d50f466a7028a9bf4e"
+      }
+    },
+    {
+      "name": "vector_3",
+      "input": {
+        "source": "multi\nline\ntext",
+        "model": "test-model-v1",
+        "vector_b64": "FguBZ81TAECqMwiCAHIEwK-uS6ohwto_rG4_Kisr4r8",
+        "vec_dtype": "f64",
+        "vec_dim": 4,
+        "timestamp": "2026-05-05T12:00:00Z"
+      },
+      "expected": {
+        "pin_json": "{\"kid\":\"test-vectors-2026-05\",\"model\":\"test-model-v1\",\"sig\":\"5kZ2O1VFVW-6gg8Me5t5zfhyrbz_LUJstZkmVgbckq-p28i-FRoS10G9u0Frh04hwVf-qm7ueGT7LZFauFD0Bw\",\"source_hash\":\"sha256:40d2ac7e90e01413544cf5bd00823522b99d4343f045724fae516ad694e1aad5\",\"ts\":\"2026-05-05T12:00:00Z\",\"v\":1,\"vec_dim\":4,\"vec_dtype\":\"f64\",\"vec_hash\":\"sha256:63659a35439d2b0b167fa38f6936cea393d09f961cc44ded04a6e631819a74be\"}",
+        "canonical_header_b64": "eyJtb2RlbCI6InRlc3QtbW9kZWwtdjEiLCJzb3VyY2VfaGFzaCI6InNoYTI1Njo0MGQyYWM3ZTkwZTAxNDEzNTQ0Y2Y1YmQwMDgyMzUyMmI5OWQ0MzQzZjA0NTcyNGZhZTUxNmFkNjk0ZTFhYWQ1IiwidHMiOiIyMDI2LTA1LTA1VDEyOjAwOjAwWiIsInYiOjEsInZlY19kaW0iOjQsInZlY19kdHlwZSI6ImY2NCIsInZlY19oYXNoIjoic2hhMjU2OjYzNjU5YTM1NDM5ZDJiMGIxNjdmYTM4ZjY5MzZjZWEzOTNkMDlmOTYxY2M0NGRlZDA0YTZlNjMxODE5YTc0YmUifQ",
+        "vec_hash": "sha256:63659a35439d2b0b167fa38f6936cea393d09f961cc44ded04a6e631819a74be",
+        "source_hash": "sha256:40d2ac7e90e01413544cf5bd00823522b99d4343f045724fae516ad694e1aad5"
+      }
+    }
+  ]
+}

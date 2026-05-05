@@ -34,3 +34,7 @@ keys/
 *.pem
 *.key
 !tests/fixtures/test_*.pem
+
+# Rust
+target/
+**/target/

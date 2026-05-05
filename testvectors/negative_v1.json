@@ -1,0 +1,6 @@
+{
+  "name": "tampered_vector",
+  "pin_json": "{\"kid\":\"test-vectors-2026-05\",\"model\":\"test-model-v1\",\"sig\":\"x1Lc0M9W4lHlhHYNPscC4CxHKtiOW6JeE7f_OEONB6aHT1x9He0Jc4vqI-7c5mPpmW29_8Cu7snr1MDF14PIDQ\",\"source_hash\":\"sha256:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9\",\"ts\":\"2026-05-05T12:00:00Z\",\"v\":1,\"vec_dim\":16,\"vec_dtype\":\"f32\",\"vec_hash\":\"sha256:5f74ef6ec2c639ff447cb52256353b79599321a956d6cf9921aa9599585cb836\"}",
+  "tampered_vector_b64": "kcUBPn9GB7698iM_39XWPaEhCb_9Irk-eemmP-Zzcj_-JzS_Vfmhv-qOH79uRSk9Ts0UwOwKYL4Dep-_4HU7vw",
+  "expected_error": "vector_tampered"
+}
