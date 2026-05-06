@@ -136,14 +136,28 @@ Verifiers MUST support multiple `kid` -> public key mappings simultaneously. Iss
 
 Old pins continue to verify against the old public key during this window.
 
-## 8. Security considerations
+## 8. Reserved `extra` keys
 
-- **Replay**: Pins are not bound to a specific record id. An attacker who copies a pin from one record to another can pass verification only if the vector and source they paste alongside match the pin. Bind to a record id via the `extra` field if replay across records matters in your threat model.
+The `vectorpin.` prefix is reserved by this specification and MUST NOT be used by implementations for any purpose other than the keys defined here. Reserved v1 keys, all optional:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `vectorpin.collection_id` | string | Identifier of the vector-store collection / index this pin belongs to. |
+| `vectorpin.record_id` | string | Identifier of the specific record this pin attests. |
+| `vectorpin.tenant_id` | string | Identifier of the multi-tenant logical namespace the pin lives in. |
+
+Implementations that need replay protection (cross-record, cross-collection, or cross-tenant) SHOULD use these reserved keys rather than inventing private names. Because every `extra` entry is signed, the values are tamper-evident.
+
+A v1.1 candidate spec promotes `record_id`, `collection_id`, and `tenant_id` to top-level fields. v1.1 verifiers will accept v1 pins; v1 verifiers will reject v1.1 pins because the protocol-version field changes.
+
+## 9. Security considerations
+
+- **Replay**: Pins are not bound to a specific record id at the wire format level. An attacker who copies a pin from one record to another can pass verification only if the vector and source they paste alongside match the pin. Implementations that need stronger replay protection SHOULD use the reserved `vectorpin.collection_id` / `vectorpin.record_id` / `vectorpin.tenant_id` keys defined in §8.
 - **Time**: The `ts` field is informational. Verifiers MAY reject pins outside an acceptable time window but the protocol does not require it.
 - **Key custody**: An attacker with the private signing key can produce arbitrary pins. Treat the signing key as a high-value secret.
 - **Source-time integrity**: VectorPin attests to the relationship between source and vector at pin time. It does not attest that the source itself was authentic at ingestion.
 
-## 9. Versioning
+## 10. Versioning
 
 This is protocol version 1. Future versions MAY:
 
