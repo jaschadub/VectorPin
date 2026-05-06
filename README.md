@@ -4,11 +4,13 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Rust stable](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
 [![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)](#status)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20058256.svg)](https://doi.org/10.5281/zenodo.20058256)
 
 Vector databases are the new soft underbelly of the AI stack. Models trust them. Agents query them. Compliance audits don't yet ask about them. VectorPin pins every embedding to its source content and the model that produced it, then continuously verifies the store has not been tampered with — including covert steganographic modifications invisible to traditional DLP.
 
-Part of the [ThirdKey](https://thirdkey.ai) Trust Stack, alongside [Symbiont](https://github.com/thirdkey/symbiont) (policy-governed agent runtime) and [SchemaPin](https://github.com/thirdkey/schemapin) (cryptographic tool verification).
+Part of the [ThirdKey](https://thirdkey.ai) Trust Stack, alongside [Symbiont](https://github.com/ThirdKeyAI/Symbiont) (policy-governed agent runtime) and [SchemaPin](https://github.com/ThirdKeyAI/SchemaPin) (cryptographic tool verification).
 
 ## Why this matters
 
@@ -18,7 +20,7 @@ Modern RAG systems convert sensitive content into high-dimensional vectors and s
 - Don't verify integrity on read
 - Treat embeddings as opaque numerical artifacts
 
-That's a giant attack surface. The [VectorSmuggle](https://github.com/jaschadub/VectorSmuggle) research project demonstrates that an attacker with write access to a vector pipeline can hide arbitrary data inside embeddings using techniques that pass standard observability:
+That's a giant attack surface. The companion [VectorSmuggle](https://github.com/jaschadub/VectorSmuggle) research project demonstrates that an attacker with write access to a vector pipeline can hide arbitrary data inside embeddings using techniques that pass standard observability:
 
 - Noise injection, rotation, scaling, and offset perturbations
 - Cross-model fragmentation
@@ -27,6 +29,8 @@ That's a giant attack surface. The [VectorSmuggle](https://github.com/jaschadub/
 Cryptographic pinning is the kill shot for these attacks. Every steganographic technique requires modifying the vector after the model produces it. If each vector ships with a signed attestation binding it to its source text and the producing model, any modification breaks the signature.
 
 ## Quick start
+
+### Python
 
 ```bash
 pip install vectorpin
@@ -52,6 +56,38 @@ result = verifier.verify(pin, source="The quick brown fox.", vector=embedding)
 if not result.ok:
     print(f"INTEGRITY FAILURE: {result.error.value} — {result.detail}")
 ```
+
+### Rust
+
+```toml
+[dependencies]
+vectorpin = "0.1"
+```
+
+```rust
+use vectorpin::{Signer, Verifier};
+
+let signer = Signer::generate("prod-2026-05".to_string());
+let embedding: Vec<f32> = my_model_embed("The quick brown fox.");
+let pin = signer.pin(
+    "The quick brown fox.",
+    "text-embedding-3-large",
+    embedding.as_slice(),
+)?;
+
+let mut verifier = Verifier::new();
+verifier.add_key(signer.key_id(), signer.public_key_bytes());
+
+let result = verifier.verify_full::<&[f32]>(
+    &pin,
+    Some("The quick brown fox."),
+    Some(embedding.as_slice()),
+    None,
+);
+assert!(result.is_ok());
+```
+
+The Python and Rust implementations are byte-for-byte compatible. A pin produced by either side verifies on both, enforced by shared test vectors at [`testvectors/v1.json`](testvectors/) consumed in both test suites.
 
 ## What VectorPin guarantees
 
@@ -128,7 +164,7 @@ detector = IsolationForestDetector().fit(clean_embeddings)
 flagged = detector.decide(suspect_embeddings)
 ```
 
-In the VectorSmuggle empirical study, this single line of defense flagged every operating point of every steganographic technique that hides a non-trivial amount of data, with TPR@1%FPR ≥ 0.79 for all noise-based attacks.
+In the VectorSmuggle empirical study, this single line of defense flagged every operating point of every distribution-shifting steganographic technique that hides a non-trivial amount of data — but it does not catch orthogonal rotation (which preserves every density feature the detector fits on) and is brittle against attackers who know the detector. Cryptographic pinning is the durable layer; statistical detection is defense-in-depth.
 
 ## Threat model
 
@@ -146,15 +182,32 @@ VectorPin does **not** defend against:
 
 ## Status
 
-Alpha. Core protocol (`Pin`, `Signer`, `Verifier`) is stable and tested. Adapter coverage is partial. Hosted attestation service is not yet available.
+Alpha (`v0.1`). Core protocol (`Pin`, `Signer`, `Verifier`) is stable and tested. Python and Rust ports are byte-for-byte compatible and locked together by shared test vectors in CI. Adapter coverage is partial. Hosted attestation service is not yet available.
 
-The protocol version field (`v: 1`) lets future revisions break compatibility cleanly. We will not break existing pins without bumping the major version.
+The protocol version field (`v: 1`) lets future revisions break compatibility cleanly. We will not break existing pins without bumping the major version. See [`docs/spec.md`](docs/spec.md) for the wire-format specification.
+
+## Citation
+
+If you reference VectorPin or the threat model it defends against, please cite the companion preprint:
+
+> Wanger, J. (2026). *VectorSmuggle: Steganographic Exfiltration in Embedding Stores and a Cryptographic Provenance Defense*. Zenodo. <https://doi.org/10.5281/zenodo.20058256>
+
+```bibtex
+@misc{wanger2026vectorsmuggle,
+  title  = {{VectorSmuggle}: Steganographic Exfiltration in Embedding Stores and a Cryptographic Provenance Defense},
+  author = {Wanger, Jascha},
+  year   = {2026},
+  publisher = {Zenodo},
+  doi    = {10.5281/zenodo.20058256},
+  url    = {https://doi.org/10.5281/zenodo.20058256}
+}
+```
 
 ## Related work
 
-- [VectorSmuggle](https://github.com/jaschadub/VectorSmuggle) — companion threat-research project demonstrating the attacks VectorPin defends against.
-- [Symbiont](https://github.com/thirdkey/symbiont) — policy-governed agent runtime; consumes VectorPin attestations to enforce "agents may only retrieve from verified vector stores."
-- [SchemaPin](https://github.com/thirdkey/schemapin) — sister project doing the same kind of cryptographic provenance for tool schemas in MCP.
+- [VectorSmuggle](https://github.com/jaschadub/VectorSmuggle) — companion threat-research project demonstrating the attacks VectorPin defends against. Empirical results in the linked Zenodo preprint.
+- [Symbiont](https://github.com/ThirdKeyAI/Symbiont) — policy-governed agent runtime; consumes VectorPin attestations to enforce "agents may only retrieve from verified vector stores."
+- [SchemaPin](https://github.com/ThirdKeyAI/SchemaPin) — sister project doing the same kind of cryptographic provenance for tool schemas in MCP.
 - [sigstore](https://www.sigstore.dev/) — inspired our approach to OSS-friendly cryptographic provenance.
 
 ## Contributing

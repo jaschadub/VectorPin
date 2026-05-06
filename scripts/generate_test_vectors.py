@@ -26,11 +26,12 @@ from __future__ import annotations
 
 import base64
 import json
+from datetime import UTC
 from pathlib import Path
 
 import numpy as np
 
-from vectorpin import Pin, Signer
+from vectorpin import Signer
 
 OUT_DIR = Path(__file__).resolve().parent.parent / "testvectors"
 
@@ -65,8 +66,8 @@ def main() -> None:
         vec = make_vector(seed=i, dim=dim, dtype=dtype)
         # Use a fixed timestamp so the pin (and therefore the signature) is
         # bit-for-bit reproducible across runs.
-        from datetime import datetime, timezone
-        ts = datetime(2026, 5, 5, 12, 0, 0, tzinfo=timezone.utc)
+        from datetime import datetime
+        ts = datetime(2026, 5, 5, 12, 0, 0, tzinfo=UTC)
         pin = signer.pin(
             source=text,
             model=model,
@@ -74,13 +75,14 @@ def main() -> None:
             vec_dtype=dtype,
             timestamp=ts,
         )
+        np_dtype = "<f4" if dtype == "f32" else "<f8"
         fixtures.append(
             {
                 "name": f"vector_{i}",
                 "input": {
                     "source": text,
                     "model": model,
-                    "vector_b64": b64url(vec.astype(f"<{'f4' if dtype == 'f32' else 'f8'}").tobytes()),
+                    "vector_b64": b64url(vec.astype(np_dtype).tobytes()),
                     "vec_dtype": dtype,
                     "vec_dim": dim,
                     "timestamp": "2026-05-05T12:00:00Z",

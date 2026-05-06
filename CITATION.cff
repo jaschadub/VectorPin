@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use VectorPin in your work, please cite both the software and the companion preprint."
+type: software
+title: "VectorPin: Verifiable integrity for AI embedding stores"
+authors:
+  - family-names: Wanger
+    given-names: Jascha
+    affiliation: "ThirdKey / Tarnover, LLC"
+    email: jascha@thirdkey.ai
+abstract: >-
+  VectorPin is a cryptographic provenance protocol for embeddings stored in
+  vector databases. Each embedding is bound to its source content and producing
+  model via an Ed25519 signature over a canonical byte representation, and any
+  post-embedding modification breaks signature verification on read. Reference
+  implementations in Python and Rust are byte-for-byte compatible, locked
+  together by shared test vectors. Part of the ThirdKey Trust Stack.
+version: "0.1.0"
+date-released: 2026-05-06
+keywords:
+  - vector database
+  - embedding store
+  - retrieval-augmented generation
+  - cryptographic provenance
+  - Ed25519
+  - integrity
+  - tamper evidence
+  - AI security
+license: Apache-2.0
+repository-code: "https://github.com/ThirdKeyAI/VectorPin"
+url: "https://thirdkey.ai"
+references:
+  - type: article
+    title: "VectorSmuggle: Steganographic Exfiltration in Embedding Stores and a Cryptographic Provenance Defense"
+    authors:
+      - family-names: Wanger
+        given-names: Jascha
+    year: 2026
+    doi: "10.5281/zenodo.20058256"
+    url: "https://doi.org/10.5281/zenodo.20058256"
+    notes: "Companion preprint documenting the threat model and the empirical evaluation that motivates VectorPin."
