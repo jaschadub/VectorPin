@@ -1,13 +1,41 @@
 // Copyright 2025 Jascha Wanger / Tarnover, LLC
 // SPDX-License-Identifier: Apache-2.0
 
-//! Pin attestation format and canonicalization.
+//! Pin attestation data structures and canonical serialization.
 //!
-//! See `docs/spec.md` in the repo root for the protocol specification.
-//! In summary: a [`Pin`] is a JSON object with a header (the signed
-//! payload) plus a key id and signature. The header canonicalizes to a
-//! deterministic byte sequence — sorted keys, no whitespace — that
-//! both Python and Rust implementations agree on byte-for-byte.
+//! A [`Pin`] is a JSON object with a header (the signed payload) plus a
+//! key id and a signature. The header canonicalizes to a deterministic
+//! byte sequence — sorted keys, no whitespace, raw UTF-8 (non-ASCII
+//! is *not* escaped to `\uXXXX`) — that the Python, Rust, and
+//! TypeScript reference implementations agree on byte-for-byte.
+//!
+//! That deterministic byte sequence is what gets signed by Ed25519, not
+//! the JSON wire form. Re-serializing a pin (different whitespace,
+//! different key order) therefore does *not* invalidate the signature
+//! as long as the canonical form is recoverable.
+//!
+//! For the full wire-format specification — every field, every supported
+//! dtype, the exact canonicalization algorithm — see
+//! [`docs/spec.md`](https://github.com/ThirdKeyAI/VectorPin/blob/main/docs/spec.md).
+//!
+//! # Example
+//!
+//! ```
+//! use vectorpin::{Pin, Signer};
+//!
+//! let signer = Signer::generate("demo".to_string());
+//! let v: Vec<f32> = vec![1.0, 2.0, 3.0];
+//! let pin = signer.pin("hello", "test-model", v.as_slice()).unwrap();
+//!
+//! // Compact JSON for storage in your vector DB metadata.
+//! let json: String = pin.to_json();
+//! assert!(!json.contains(": "));
+//! assert!(!json.contains(", "));
+//!
+//! // Round-trip through wire form preserves the pin exactly.
+//! let parsed = Pin::from_json(&json).unwrap();
+//! assert_eq!(pin, parsed);
+//! ```
 
 use std::collections::BTreeMap;
 
@@ -21,8 +49,14 @@ pub const PROTOCOL_VERSION: u32 = 1;
 /// The signed portion of a [`Pin`].
 ///
 /// Two pins are considered equivalent iff their headers canonicalize to
-/// identical bytes. Optional fields (`model_hash`, `extra`) are omitted
-/// from the canonical form when unset, never written as `null`.
+/// identical bytes. Optional fields ([`model_hash`](Self::model_hash),
+/// [`extra`](Self::extra)) are omitted from the canonical form when
+/// unset, never written as `null` — this matters because adding a
+/// `null` would change the byte sequence the signature commits to.
+///
+/// You normally do not construct `PinHeader` directly; obtain one from
+/// [`Signer::pin`](crate::Signer::pin) or
+/// [`Signer::pin_with_options`](crate::signer::Signer::pin_with_options).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PinHeader {
     /// Protocol version. Must equal [`PROTOCOL_VERSION`].
@@ -99,8 +133,25 @@ impl PinHeader {
     }
 }
 
-/// A signed VectorPin attestation. Serialize with [`Pin::to_json`] and
-/// store alongside the embedding in vector store metadata.
+/// A signed VectorPin attestation.
+///
+/// Serialize with [`Pin::to_json`] and store the resulting string
+/// alongside the embedding in vector-store metadata. On read, parse
+/// with [`Pin::from_json`] and hand to [`Verifier::verify_full`](crate::Verifier::verify_full).
+///
+/// # Example
+///
+/// ```
+/// use vectorpin::{Pin, Signer, Verifier};
+///
+/// let signer = Signer::generate("k1".to_string());
+/// let v: Vec<f32> = vec![1.0, 2.0, 3.0];
+/// let pin = signer.pin("hello", "m", v.as_slice()).unwrap();
+///
+/// let mut verifier = Verifier::new();
+/// verifier.add_key(signer.key_id(), signer.public_key_bytes());
+/// assert!(verifier.verify_signature(&Pin::from_json(&pin.to_json()).unwrap()).is_ok());
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pin {
     /// The signed payload.

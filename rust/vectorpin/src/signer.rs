@@ -3,9 +3,42 @@
 
 //! Pin signing.
 //!
-//! Wraps an Ed25519 signing key plus a `kid` so verifiers can route
-//! signatures during key rotation. Use [`Signer::generate`] for tests
-//! and demos; load production keys from a managed secret store.
+//! Wraps an Ed25519 signing key plus a `kid` (key id) so verifiers can
+//! route signatures during key rotation. Use [`Signer::generate`] for
+//! tests and demos; load production keys from a managed secret store
+//! via [`Signer::from_private_bytes`].
+//!
+//! # Examples
+//!
+//! ```
+//! use vectorpin::Signer;
+//!
+//! let signer = Signer::generate("prod-2026-05".to_string());
+//! let v: Vec<f32> = vec![0.1, 0.2, 0.3];
+//! let pin = signer.pin("hello", "text-embedding-3-large", v.as_slice()).unwrap();
+//! assert_eq!(pin.kid, "prod-2026-05");
+//! assert_eq!(pin.sig.len(), 64); // Ed25519 signature
+//! ```
+//!
+//! For deterministic signing (test fixtures, reproducible CI builds),
+//! use [`PinOptions`] to supply an explicit timestamp and dtype:
+//!
+//! ```
+//! use vectorpin::signer::{PinOptions, Signer};
+//! use vectorpin::VecDtype;
+//!
+//! let signer = Signer::generate("test".to_string());
+//! let v: Vec<f32> = vec![0.1, 0.2, 0.3];
+//! let opts = PinOptions {
+//!     dtype: Some(VecDtype::F32),
+//!     timestamp: Some("2026-05-05T12:00:00Z".to_string()),
+//!     ..PinOptions::default()
+//! };
+//! let pin = signer
+//!     .pin_with_options("hello", "test-model", v.as_slice(), opts)
+//!     .unwrap();
+//! assert_eq!(pin.header.ts, "2026-05-05T12:00:00Z");
+//! ```
 
 use std::collections::BTreeMap;
 
@@ -29,6 +62,22 @@ pub enum SignerError {
 }
 
 /// Produces signed [`Pin`] attestations.
+///
+/// A `Signer` holds one Ed25519 private key plus a stable identifier
+/// (`kid`) that gets embedded in every pin it produces. Verifiers use
+/// the `kid` to look up the matching public key in their registry, so
+/// rotating signing keys is a matter of issuing a new `(kid, key)` pair
+/// and accepting both the old and new `kid` values during the rotation
+/// window — no protocol changes required.
+///
+/// # Secret material
+///
+/// [`Signer::generate`] is for tests, demos, and one-off CLI tools.
+/// In production, hold the 32-byte private seed in a managed secrets
+/// store (HSM, KMS, sealed env var) and instantiate via
+/// [`Signer::from_private_bytes`]. [`Signer::private_key_bytes`] is
+/// provided for backup/key-export workflows; treat its output as
+/// secret.
 pub struct Signer {
     signing_key: SigningKey,
     key_id: String,

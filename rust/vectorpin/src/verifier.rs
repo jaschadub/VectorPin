@@ -3,9 +3,82 @@
 
 //! Pin verification.
 //!
-//! Mirrors the Python verifier: same failure-mode enum, same matching
-//! semantics, same support for partial verification (signature-only,
-//! signature + vector, etc).
+//! Mirrors the Python and TypeScript verifiers: same failure-mode
+//! enum, same matching semantics, same support for partial verification
+//! (signature-only, signature + vector, full).
+//!
+//! [`Verifier`] holds a registry of `kid -> public key` so it can verify
+//! pins signed under multiple key ids during rotation. Add keys with
+//! [`Verifier::add_key`] before calling [`Verifier::verify_full`] or
+//! [`Verifier::verify_signature`]; missing-key errors surface as
+//! [`VerifyError::UnknownKey`].
+//!
+//! # Examples
+//!
+//! Full verification — signature, vector hash, source hash:
+//!
+//! ```
+//! use vectorpin::{Signer, Verifier};
+//!
+//! let signer = Signer::generate("k1".to_string());
+//! let v: Vec<f32> = vec![1.0, 2.0, 3.0];
+//! let pin = signer.pin("hello", "m", v.as_slice()).unwrap();
+//!
+//! let mut verifier = Verifier::new();
+//! verifier.add_key(signer.key_id(), signer.public_key_bytes());
+//! verifier
+//!     .verify_full(&pin, Some("hello"), Some(v.as_slice()), None)
+//!     .expect("honest verify must pass");
+//! ```
+//!
+//! Signature-only verification (when ground-truth source/vector are not
+//! on hand but producer identity still matters):
+//!
+//! ```
+//! # use vectorpin::{Signer, Verifier};
+//! # let signer = Signer::generate("k1".to_string());
+//! # let v: Vec<f32> = vec![1.0, 2.0, 3.0];
+//! # let pin = signer.pin("hello", "m", v.as_slice()).unwrap();
+//! # let mut verifier = Verifier::new();
+//! # verifier.add_key(signer.key_id(), signer.public_key_bytes());
+//! verifier.verify_signature(&pin).unwrap();
+//! ```
+//!
+//! Tampered vector — caught by [`VerifyError::VectorTampered`]:
+//!
+//! ```
+//! # use vectorpin::{Signer, Verifier, VerifyError};
+//! # let signer = Signer::generate("k1".to_string());
+//! # let v: Vec<f32> = vec![1.0, 2.0, 3.0];
+//! # let pin = signer.pin("hello", "m", v.as_slice()).unwrap();
+//! # let mut verifier = Verifier::new();
+//! # verifier.add_key(signer.key_id(), signer.public_key_bytes());
+//! let mut tampered = v.clone();
+//! tampered[0] += 1e-5;
+//! let err = verifier
+//!     .verify_full(&pin, None::<&str>, Some(tampered.as_slice()), None)
+//!     .unwrap_err();
+//! assert_eq!(err, VerifyError::VectorTampered);
+//! ```
+//!
+//! Key rotation — accept both old and new `kid` during the rollover
+//! window:
+//!
+//! ```
+//! use vectorpin::{Signer, Verifier};
+//!
+//! let old = Signer::generate("2026-04".to_string());
+//! let new = Signer::generate("2026-05".to_string());
+//! let mut verifier = Verifier::new();
+//! verifier.add_key(old.key_id(), old.public_key_bytes());
+//! verifier.add_key(new.key_id(), new.public_key_bytes());
+//!
+//! let v: Vec<f32> = vec![1.0, 2.0];
+//! let pin_old = old.pin("hello", "m", v.as_slice()).unwrap();
+//! let pin_new = new.pin("hello", "m", v.as_slice()).unwrap();
+//! verifier.verify_signature(&pin_old).unwrap();
+//! verifier.verify_signature(&pin_new).unwrap();
+//! ```
 
 use std::collections::HashMap;
 

@@ -33,3 +33,7 @@ default = []
 [[bench]]
 name = "perf"
 harness = false
+
+# docs.rs builds the documentation with these settings.
+[package.metadata.docs.rs]
+all-features = true

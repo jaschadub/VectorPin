@@ -5,12 +5,43 @@
 //!
 //! These three operations are the only places in the protocol where
 //! semantic content gets turned into bytes. Any disagreement between
-//! Python and Rust here breaks cross-language verification, so the
-//! semantics are pinned down explicitly:
+//! the Python, Rust, and TypeScript ports here breaks cross-language
+//! verification, so the semantics are pinned down explicitly:
 //!
 //! * Vectors: little-endian, 1-D, packed `f32` or `f64` bytes.
 //! * Text: UTF-8 of the NFC-normalized string.
 //! * Output digests: prefixed with `"sha256:"` and lowercase hex.
+//!
+//! Cross-language byte-for-byte parity for the functions in this module
+//! is asserted by `tests/cross_lang.rs` against the shared fixtures in
+//! [`testvectors/`](https://github.com/ThirdKeyAI/VectorPin/tree/main/testvectors).
+//!
+//! # Examples
+//!
+//! Hashing source text is NFC-normalized so that visually identical
+//! strings stored in different Unicode forms hash equal:
+//!
+//! ```
+//! use vectorpin::hash_text;
+//!
+//! let composed = "caf\u{00e9}";        // 'é' as one codepoint (NFC)
+//! let decomposed = "cafe\u{0301}";     // 'e' + combining acute (NFD)
+//! assert_eq!(hash_text(composed), hash_text(decomposed));
+//! assert!(hash_text("hello").starts_with("sha256:"));
+//! ```
+//!
+//! Hashing a vector requires the dtype the caller wants to commit to.
+//! The same numeric values hashed under f32 and f64 produce different
+//! digests, by design — the dtype is part of the signed contract:
+//!
+//! ```
+//! use vectorpin::{hash_vector, hash::VectorRef, VecDtype};
+//!
+//! let v: Vec<f32> = vec![0.1, 0.2, 0.3];
+//! let h32 = hash_vector(VectorRef::F32(&v), VecDtype::F32);
+//! assert!(h32.starts_with("sha256:"));
+//! assert_eq!(h32.len(), "sha256:".len() + 64);
+//! ```
 
 use sha2::{Digest, Sha256};
 use unicode_normalization::UnicodeNormalization;
@@ -117,8 +148,20 @@ impl<'a> From<&'a [f64]> for VectorRef<'a> {
 /// Reproducible byte form of an embedding vector.
 ///
 /// Always little-endian, always packed, always under the dtype
-/// requested by the caller. Two implementations must agree on these
-/// bytes byte-for-byte for cross-language verification to work.
+/// requested by the caller. The Python, Rust, and TypeScript ports
+/// must agree on these bytes byte-for-byte for cross-language
+/// verification to work.
+///
+/// # Example
+///
+/// ```
+/// use vectorpin::{canonical_vector_bytes, hash::VectorRef, VecDtype};
+///
+/// let v = [1.0_f32];
+/// let bytes = canonical_vector_bytes(VectorRef::F32(&v), VecDtype::F32);
+/// // 1.0_f32 in IEEE-754 little-endian.
+/// assert_eq!(bytes, [0x00, 0x00, 0x80, 0x3f]);
+/// ```
 pub fn canonical_vector_bytes(vector: VectorRef<'_>, dtype: VecDtype) -> Vec<u8> {
     match (vector, dtype) {
         (VectorRef::F32(v), VecDtype::F32) => f32_le_bytes(v),
