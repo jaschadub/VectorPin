@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 authors = [
-    { name = "Jascha Wanger", email = "jascha@thirdkey.ai" },
+    { name = "Jascha Wanger / ThirdKey.ai" },
 ]
 keywords = ["security", "vector-database", "embeddings", "rag", "integrity", "provenance"]
 classifiers = [
@@ -56,8 +56,8 @@ dev = [
 
 [project.urls]
 Homepage = "https://vectorpin.org"
-Repository = "https://github.com/thirdkey/vectorpin"
-Issues = "https://github.com/thirdkey/vectorpin/issues"
+Repository = "https://github.com/ThirdKeyAI/VectorPin"
+Issues = "https://github.com/ThirdKeyAI/VectorPin/issues"
 Documentation = "https://vectorpin.org/docs"
 
 [project.scripts]

@@ -5,7 +5,7 @@ All notable changes to VectorPin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] — 2026-05-06
+## [0.1.0] — 2026-05-07
 
 Initial public release. Protocol version: 1.
 
@@ -35,18 +35,46 @@ Initial public release. Protocol version: 1.
 - Same canonical bytes, same Ed25519 signatures.
 - `Signer`, `Verifier`, `Pin`, `PinHeader` types with the same
   failure-mode taxonomy.
-- `cargo test` passes 23 unit tests + 2 cross-language tests + 1 doctest.
+- Full unit-test coverage plus cross-language fixtures and one doctest.
+
+#### TypeScript implementation (`typescript/`)
+- Third reference implementation, byte-for-byte compatible with
+  Python and Rust. Pure JavaScript via `@noble/ed25519` and
+  `@noble/hashes`, no native deps; works in Node 20+, Deno, Bun, and
+  Cloudflare Workers.
+- `Signer.generate(keyId)` / `Signer.fromPrivateBytes(raw, keyId)`.
+- `Signer.pin({ source, model, vector, ... })` named-options API.
+- `Verifier(publicKeys)` with the same failure-mode taxonomy as the
+  Python and Rust ports; string-valued `VerifyErrorCode` matches the
+  Python wire-form values.
+- `pinToJSON` / `pinFromJSON` round-trip.
+- ESM-only, ships TypeScript declarations.
 
 #### Cross-language test vectors (`testvectors/`)
-- `v1.json`: positive fixtures with deterministic seed, consumed by both
-  Python and Rust test suites.
-- `negative_v1.json`: tamper-detection fixture.
+- `v1.json`: positive fixtures with deterministic seed, consumed by
+  the Python, Rust, and TypeScript test suites.
+- `negative_v1.json`: tamper-detection fixture, consumed by all three
+  ports.
 - CI workflow regenerates fixtures on every Python-side change and
   fails on byte drift, preventing silent compatibility breakage.
 
-#### Adapters and detectors
+#### Adapters
+Lazy-loaded via `__getattr__` on `vectorpin.adapters`; backend client
+libraries are only imported when the corresponding adapter is used.
+- `LanceDBAdapter` *(default backend)*: embedded, file-based, no
+  daemon. Pin lives as a typed string column on the table; Lance's
+  versioned commit protocol makes (vector, pin) writes atomic. Matches
+  the Symbiont runtime's default vector backend. Install with
+  `pip install 'vectorpin[default]'` or `'vectorpin[lancedb]'`.
+- `ChromaAdapter`: Chroma `metadatas` field. Install with
+  `pip install 'vectorpin[chroma]'`.
+- `PineconeAdapter`: Pinecone v5+ client (the package was renamed
+  upstream from `pinecone-client` to `pinecone`). Install with
+  `pip install 'vectorpin[pinecone]'`.
 - `QdrantAdapter`: production Qdrant integration via `qdrant-client`.
-  Lazily imported; install with `pip install 'vectorpin[qdrant]'`.
+  Install with `pip install 'vectorpin[qdrant]'`.
+
+#### Detectors
 - `IsolationForestDetector` and `OneClassSVMDetector`: defensive
   baselines from sklearn. Lazily imported; install with
   `pip install 'vectorpin[detectors]'`.
@@ -57,8 +85,16 @@ Initial public release. Protocol version: 1.
 - `verify-pin`: verify a pin against ground-truth source/vector.
 - `audit-qdrant`: walk a Qdrant collection and report on every record.
 
+#### Microbenchmarks
+- `rust/vectorpin/benches/perf.rs` (criterion) and
+  `scripts/bench_python.py` (`time.perf_counter_ns`). Per-op coverage
+  of `hash_text`, `hash_vector`, `sign`, `verify_full`,
+  `verify_signature_only` across vector dim ∈ {384, 768, 1024, 3072}
+  and text length ∈ {128, 1024, 8192}. Sub-millisecond per vector on
+  commodity hardware.
+
 #### Documentation
-- README with Python and Rust quick-start.
+- README with Python, Rust, and TypeScript quick-start.
 - `docs/spec.md` — protocol v1 specification.
 - `examples/basic_usage.py` and `examples/basic_usage.rs`.
 - Companion preprint (Zenodo DOI
@@ -67,9 +103,12 @@ Initial public release. Protocol version: 1.
 
 ### Known limitations
 
-- Adapter coverage is partial: Qdrant only. FAISS, Pinecone, Chroma,
-  and pgvector adapters are planned for v0.2.
-- TypeScript and Go ports are planned but not yet shipped.
+- Adapter coverage is partial: LanceDB, Chroma, Pinecone, and Qdrant
+  ship; FAISS and pgvector are planned for a follow-up release. The
+  recommended path for FAISS users is to use `LanceDBAdapter`
+  (embedded, has metadata column natively) and treat FAISS as a
+  derived index.
+- A Go port is planned but not yet shipped.
 - Record-id and collection-id binding currently lives under the
   `extra` field; promotion to top-level fields is a candidate for
   protocol v1.1.

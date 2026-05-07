@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Verifiable integrity for AI embedding stores. TypeScript reference implementation.",
   "license": "Apache-2.0",
-  "author": "Jascha Wanger <jascha@thirdkey.ai>",
+  "author": "Jascha Wanger / ThirdKey.ai",
   "homepage": "https://vectorpin.org",
   "repository": {
     "type": "git",

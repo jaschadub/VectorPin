@@ -12,10 +12,10 @@ abstract: >-
   vector databases. Each embedding is bound to its source content and producing
   model via an Ed25519 signature over a canonical byte representation, and any
   post-embedding modification breaks signature verification on read. Reference
-  implementations in Python and Rust are byte-for-byte compatible, locked
-  together by shared test vectors. Part of the ThirdKey Trust Stack.
+  implementations in Python, Rust, and TypeScript are byte-for-byte compatible,
+  locked together by shared test vectors. Part of the ThirdKey Trust Stack.
 version: "0.1.0"
-date-released: 2026-05-06
+date-released: 2026-05-07
 keywords:
   - vector database
   - embedding store
