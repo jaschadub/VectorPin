@@ -5,6 +5,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Rust stable](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
+[![Node 20+](https://img.shields.io/badge/node-20+-green.svg)](https://nodejs.org/)
 [![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)](#status)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20058256.svg)](https://doi.org/10.5281/zenodo.20058256)
 
@@ -87,7 +88,32 @@ let result = verifier.verify_full::<&[f32]>(
 assert!(result.is_ok());
 ```
 
-The Python and Rust implementations are byte-for-byte compatible. A pin produced by either side verifies on both, enforced by shared test vectors at [`testvectors/v1.json`](testvectors/) consumed in both test suites.
+### TypeScript / JavaScript
+
+```bash
+npm install vectorpin
+```
+
+```ts
+import { Signer, Verifier } from 'vectorpin';
+
+const signer = Signer.generate('prod-2026-05');
+const embedding = new Float32Array(/* ... 3072 floats from your model ... */);
+const pin = signer.pin({
+  source: 'The quick brown fox.',
+  model: 'text-embedding-3-large',
+  vector: embedding,
+});
+
+const verifier = new Verifier({ [signer.keyId]: signer.publicKeyBytes() });
+const result = verifier.verify(pin, {
+  source: 'The quick brown fox.',
+  vector: embedding,
+});
+if (!result.ok) throw new Error(`integrity failure: ${result.error}`);
+```
+
+The Python, Rust, and TypeScript implementations are byte-for-byte compatible. A pin produced by any of them verifies on the other two, enforced by shared test vectors at [`testvectors/v1.json`](testvectors/) consumed in all three test suites. The TS port is pure JavaScript via [`@noble/ed25519`](https://github.com/paulmillr/noble-ed25519) and [`@noble/hashes`](https://github.com/paulmillr/noble-hashes), so it also runs in Deno, Bun, and edge runtimes.
 
 ## What VectorPin guarantees
 

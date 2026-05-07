@@ -1,0 +1,54 @@
+{
+  "name": "vectorpin",
+  "version": "0.1.0",
+  "description": "Verifiable integrity for AI embedding stores. TypeScript reference implementation.",
+  "license": "Apache-2.0",
+  "author": "Jascha Wanger <jascha@thirdkey.ai>",
+  "homepage": "https://vectorpin.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThirdKeyAI/VectorPin.git",
+    "directory": "typescript"
+  },
+  "keywords": [
+    "security",
+    "vector-database",
+    "embeddings",
+    "rag",
+    "integrity",
+    "provenance",
+    "ed25519"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.1.0",
+    "@noble/hashes": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
