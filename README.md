@@ -159,13 +159,31 @@ vectorpin verify-pin \
     --source ./doc.txt \
     --vector ./embedding.npy
 
-# Audit an entire Qdrant collection
+# Audit an entire LanceDB table (recommended default backend)
+vectorpin audit-lancedb \
+    --uri ./data/vector_db \
+    --table symbiont_context \
+    --public-key ./keys/prod-2026-05.pub \
+    --key-id prod-2026-05 \
+    --source-column content    # Symbiont default; omit to skip source verification
+
+# Audit a Chroma collection
+vectorpin audit-chroma \
+    --path ./chroma_db \
+    --collection my-rag \
+    --public-key ./keys/prod-2026-05.pub \
+    --key-id prod-2026-05 \
+    --source-metadata-key text
+
+# Audit a Qdrant collection
 vectorpin audit-qdrant \
     --url http://localhost:6333 \
     --collection my-rag \
     --public-key ./keys/prod-2026-05.pub \
     --key-id prod-2026-05
 ```
+
+Audit commands print a JSON summary (`total`, `pinned`, `verified_ok`, `verification_failed`, `unpinned`) on stdout and exit non-zero on any verification failure, so they compose cleanly into CI or a cron job.
 
 ## Vector store integrations
 
