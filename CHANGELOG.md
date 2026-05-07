@@ -5,6 +5,41 @@ All notable changes to VectorPin will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] — 2026-05-07
+
+Patch release. No protocol changes; pins produced by 0.1.0 verify on
+0.1.1 and vice-versa. Cross-language test vectors are unchanged from
+0.1.0; the seed-based fixtures in `testvectors/v1.json` are byte-for-byte
+identical.
+
+### Added
+
+- `audit-lancedb` CLI command. Walks a LanceDB table, verifies every
+  pin (signature + vector hash, plus source hash if `--source-column`
+  is supplied), and emits a JSON summary. Exit non-zero on any
+  verification failure so it composes cleanly into CI / cron.
+- `audit-chroma` CLI command. Same shape, against a Chroma collection
+  (persistent or HTTP). Optional `--source-metadata-key` flag for
+  source-text verification.
+- `audit-qdrant` gained an optional `--source-payload-key` flag for
+  parity with the new commands. Existing invocations are unaffected
+  (signature + vector verification remains the default).
+
+### Documentation
+
+- Comprehensive [docs.rs landing page](https://docs.rs/vectorpin) for
+  the Rust crate: overview, architecture table, failure-mode taxonomy,
+  threat model, and runnable doctest examples on every public type.
+- Doctest count grew from 1 to 12 across `attestation`, `hash`,
+  `signer`, and `verifier`. Strict `cargo doc` build now passes under
+  `-D missing_docs -D rustdoc::broken_intra_doc_links
+  -D rustdoc::missing_crate_level_docs`.
+- Crates.io README rewritten to match the docs.rs landing-page tone.
+- Repository URL fixed in `pyproject.toml` (was `thirdkey/vectorpin`,
+  now `ThirdKeyAI/VectorPin`).
+- Author string aligned to `"Jascha Wanger / ThirdKey.ai"` across all
+  three packaging configs to match the rest of the Trust Stack.
+
 ## [0.1.0] — 2026-05-07
 
 Initial public release. Protocol version: 1.
@@ -113,4 +148,5 @@ libraries are only imported when the corresponding adapter is used.
   `extra` field; promotion to top-level fields is a candidate for
   protocol v1.1.
 
+[0.1.1]: https://github.com/ThirdKeyAI/VectorPin/releases/tag/v0.1.1
 [0.1.0]: https://github.com/ThirdKeyAI/VectorPin/releases/tag/v0.1.0
