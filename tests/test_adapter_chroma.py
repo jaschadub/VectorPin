@@ -14,8 +14,8 @@ import pytest
 
 chromadb = pytest.importorskip("chromadb")
 
-from vectorpin import Signer, Verifier  # noqa: E402
-from vectorpin.adapters import ChromaAdapter  # noqa: E402
+from vectorpin import Signer, Verifier
+from vectorpin.adapters import ChromaAdapter
 
 
 @pytest.fixture

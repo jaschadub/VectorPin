@@ -15,8 +15,8 @@ import pytest
 
 lancedb = pytest.importorskip("lancedb")
 
-from vectorpin import Signer, Verifier  # noqa: E402
-from vectorpin.adapters import PIN_METADATA_KEY, LanceDBAdapter  # noqa: E402
+from vectorpin import Signer, Verifier
+from vectorpin.adapters import PIN_METADATA_KEY, LanceDBAdapter
 
 
 @pytest.fixture

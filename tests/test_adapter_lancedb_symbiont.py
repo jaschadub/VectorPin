@@ -40,8 +40,8 @@ import pytest
 
 lancedb = pytest.importorskip("lancedb")
 
-from vectorpin import Signer, Verifier  # noqa: E402
-from vectorpin.adapters import PIN_METADATA_KEY, LanceDBAdapter  # noqa: E402
+from vectorpin import Signer, Verifier
+from vectorpin.adapters import PIN_METADATA_KEY, LanceDBAdapter
 
 # Symbiont default: 384-dim vectors. Tests use 16 dims to keep the
 # fixtures small; the schema layout is what matters here, not size.
@@ -99,7 +99,11 @@ def symbiont_table(tmp_path):
             PIN_METADATA_KEY: None,
         },
     ]
-    return db.create_table("symbiont_context", data=rows, schema=_symbiont_schema(SYMBIONT_VECTOR_DIM))
+    return db.create_table(
+        "symbiont_context",
+        data=rows,
+        schema=_symbiont_schema(SYMBIONT_VECTOR_DIM),
+    )
 
 
 def test_iter_yields_symbiont_records_unpinned(symbiont_table):

@@ -24,9 +24,8 @@ import pytest
 
 pinecone = pytest.importorskip("pinecone")
 
-from vectorpin import Pin, Signer, Verifier  # noqa: E402
-from vectorpin.adapters import PIN_METADATA_KEY, PineconeAdapter  # noqa: E402
-
+from vectorpin import Pin, Signer, Verifier
+from vectorpin.adapters import PIN_METADATA_KEY, PineconeAdapter
 
 # ---- offline tests (no credentials needed) ----
 

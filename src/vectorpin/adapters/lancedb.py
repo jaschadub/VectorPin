@@ -18,16 +18,12 @@ Install with: pip install 'vectorpin[lancedb]'
 from __future__ import annotations
 
 from collections.abc import Iterator
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import numpy as np
 
 from vectorpin.adapters.base import PIN_METADATA_KEY, BaseAdapter, PinnedRecord
 from vectorpin.attestation import Pin
-
-if TYPE_CHECKING:
-    import lancedb
-
 
 # Default column names used by LanceDBAdapter. Override at construction
 # time if your schema uses different names.
@@ -145,7 +141,8 @@ class LanceDBAdapter(BaseAdapter):
             batch.column(self._pin).to_pylist() if self._pin in names else [None] * batch.num_rows
         )
         # Build a metadata dict from anything that isn't the id/vec/pin.
-        passthrough_cols = [c for c in batch.schema.names if c not in {self._id, self._vec, self._pin}]
+        reserved = {self._id, self._vec, self._pin}
+        passthrough_cols = [c for c in batch.schema.names if c not in reserved]
         passthrough = {c: batch.column(c).to_pylist() for c in passthrough_cols}
 
         for i, rid in enumerate(ids):
