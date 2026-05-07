@@ -10,10 +10,10 @@ network access is required.
 from __future__ import annotations
 
 import numpy as np
-import pyarrow as pa
 import pytest
 
 lancedb = pytest.importorskip("lancedb")
+pa = pytest.importorskip("pyarrow")
 
 from vectorpin import Signer, Verifier
 from vectorpin.adapters import PIN_METADATA_KEY, LanceDBAdapter

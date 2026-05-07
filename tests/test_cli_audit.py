@@ -16,11 +16,11 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 import numpy as np
-import pyarrow as pa
 import pytest
 
 lancedb = pytest.importorskip("lancedb")
 chromadb = pytest.importorskip("chromadb")
+pa = pytest.importorskip("pyarrow")
 
 from vectorpin import Signer
 from vectorpin.adapters import (
