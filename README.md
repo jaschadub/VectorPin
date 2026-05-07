@@ -145,13 +145,61 @@ vectorpin audit-qdrant \
 
 | Backend | Status | Install |
 |---|---|---|
+| LanceDB *(default)* | Alpha | `pip install 'vectorpin[default]'` |
+| Chroma | Alpha | `pip install 'vectorpin[chroma]'` |
+| Pinecone | Alpha | `pip install 'vectorpin[pinecone]'` |
 | Qdrant | Alpha | `pip install 'vectorpin[qdrant]'` |
-| FAISS | Planned | — |
-| Pinecone | Planned | — |
-| Chroma | Planned | — |
 | pgvector | Planned | — |
+| FAISS | Planned | Use `LanceDBAdapter` (embedded, has metadata column natively). |
+
+LanceDB is the recommended default: embedded, file-based, no daemon, with a typed schema column that holds the Pin natively — matching the [Symbiont runtime's](https://github.com/thirdkeyai/symbiont) default vector backend. Choose Chroma or Pinecone if you already run those; Qdrant if you need server-side payload filtering.
+
+For Symbiont deployments, the source text the embedding was produced from lives in Symbiont's `content` column (Symbiont's column literally named `source` is upstream provenance like a URL, not VectorPin's `source` argument). Pass `source=record.metadata["content"]` when calling `signer.pin`. See `tests/test_adapter_lancedb_symbiont.py` for an end-to-end example against the Symbiont schema.
+
+```python
+from vectorpin import Signer, Verifier
+from vectorpin.adapters import LanceDBAdapter
+
+adapter = LanceDBAdapter.connect("./data/vector_db", "rag-corpus")
+signer = Signer.generate(key_id="prod-2026-05")
+verifier = Verifier(public_keys={signer.key_id: signer.public_key_bytes()})
+
+# Replace "text" below with whichever column on your table holds
+# the source text the embedding was produced from. On Symbiont's
+# default schema, that column is named "content".
+for record in adapter.iter_records():
+    pin = signer.pin(
+        source=record.metadata["text"],
+        model="text-embedding-3-large",
+        vector=record.vector,
+    )
+    adapter.attach_pin(record.id, pin)
+```
 
 The [adapter protocol](src/vectorpin/adapters/base.py) is intentionally thin; community contributions for new backends are welcome.
+
+## Performance
+
+Pinning and verification are sub-millisecond per vector on commodity hardware — well below the embedding-model latency they sit alongside. Microbenchmarks for both implementations live at [`rust/vectorpin/benches/perf.rs`](rust/vectorpin/benches/perf.rs) (criterion) and [`scripts/bench_python.py`](scripts/bench_python.py) (`time.perf_counter_ns`).
+
+```bash
+# Rust (criterion writes a report to target/criterion/)
+cd rust && cargo bench --bench perf
+
+# Python (standalone, no extra deps)
+python scripts/bench_python.py --iters 5000
+```
+
+Indicative numbers on a modern x86_64 laptop, 3072-dim vectors (matching `text-embedding-3-large`):
+
+| Operation | Rust (µs) | Python (µs) |
+|---|---|---|
+| `hash_vector` | 6.4 | 5.8 |
+| `sign` (pin) | 35 | 35 |
+| `verify_full` | 42 | 79 |
+| `verify_signature_only` | 22 | 75 |
+
+Re-run on your own hardware before quoting numbers.
 
 ## Statistical detectors
 
